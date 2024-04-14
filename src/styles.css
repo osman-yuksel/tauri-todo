@@ -36,7 +36,6 @@
 
 .row {
   display: flex;
-  justify-content: center;
 }
 
 a {
@@ -84,8 +83,12 @@ button {
   outline: none;
 }
 
-#greet-input {
+#todo-input {
   margin-right: 5px;
+}
+
+li {
+  text-align: left;
 }
 
 @media (prefers-color-scheme: dark) {

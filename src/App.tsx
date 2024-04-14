@@ -1,51 +1,59 @@
-import { createSignal } from "solid-js";
-import logo from "./assets/logo.svg";
+import { For, createSignal, createResource } from "solid-js";
 import { invoke } from "@tauri-apps/api/tauri";
 import "./App.css";
 
-function App() {
-  const [greetMsg, setGreetMsg] = createSignal("");
-  const [name, setName] = createSignal("");
+type Todo = {
+  id: number;
+  value: string;
+};
 
-  async function greet() {
-    // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
-    setGreetMsg(await invoke("greet", { name: name() }));
+function App() {
+  const [todo, setTodo] = createSignal("");
+
+  const fetcher = () => invoke("todos_get") as Promise<Array<Todo>>;
+  const [data, { mutate }] = createResource(fetcher);
+
+  async function addTodo() {
+    try {
+      const res = (await invoke("todo_add", { value: todo() })) as Todo;
+      const newTodo = {
+        id: res.id,
+        value: res.value,
+      };
+      mutate([...(data() ?? []), newTodo]);
+    } catch (e) {
+      console.error(e);
+    }
   }
 
   return (
     <div class="container">
-      <h1>Welcome to Tauri!</h1>
-
-      <div class="row">
-        <a href="https://vitejs.dev" target="_blank">
-          <img src="/vite.svg" class="logo vite" alt="Vite logo" />
-        </a>
-        <a href="https://tauri.app" target="_blank">
-          <img src="/tauri.svg" class="logo tauri" alt="Tauri logo" />
-        </a>
-        <a href="https://solidjs.com" target="_blank">
-          <img src={logo} class="logo solid" alt="Solid logo" />
-        </a>
-      </div>
-
-      <p>Click on the Tauri, Vite, and Solid logos to learn more.</p>
-
       <form
         class="row"
         onSubmit={(e) => {
           e.preventDefault();
-          greet();
+          addTodo();
         }}
       >
         <input
-          id="greet-input"
-          onChange={(e) => setName(e.currentTarget.value)}
-          placeholder="Enter a name..."
+          id="todo-input"
+          onChange={(e) => setTodo(e.currentTarget.value)}
+          placeholder="Enter a todo..."
         />
-        <button type="submit">Greet</button>
+        <button type="submit">Add</button>
       </form>
 
-      <p>{greetMsg()}</p>
+      <div class="row" id="todo-list">
+        <ul>
+          <For each={data()}>
+            {(todo) => (
+              <li>
+                {todo.id}: {todo.value}
+              </li>
+            )}
+          </For>
+        </ul>
+      </div>
     </div>
   );
 }
