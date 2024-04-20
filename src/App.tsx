@@ -32,6 +32,15 @@ function App() {
     clearInput();
   }
 
+  function deleteTodo(id: number) {
+    try {
+      invoke("todo_delete", { value: id });
+      mutate(data()?.filter((todo) => todo.id !== id));
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
   function clearInput() {
     setTodo("");
   }
@@ -62,7 +71,10 @@ function App() {
           <For each={data()}>
             {(todo) => (
               <li>
-                {todo.id}: {todo.value}
+                <p>
+                  {todo.id}&nbsp;- &nbsp;&nbsp;{todo.value}
+                </p>
+                <button onclick={() => deleteTodo(todo.id)}>Delete</button>
               </li>
             )}
           </For>

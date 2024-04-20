@@ -84,10 +84,23 @@ fn todo_add(value: &str, db: tauri::State<'_, Database>) -> Result<Todo, String>
     })
 }
 
+#[tauri::command]
+fn todo_delete(value: u32, db: tauri::State<'_, Database>) -> Result<(), String> {
+    let db = db.0.lock().unwrap();
+    let entry = db.execute("DELETE FROM todo WHERE id = ?", &[&value]);
+
+    match entry {
+        Ok(_) => println!("TODO:REMOVE {:?}", entry),
+        Err(err) => println!("Error while removing todo {:?}", err),
+    };
+
+    Ok(())
+}
+
 fn main() {
     tauri::Builder::default()
         .manage(Database::new())
-        .invoke_handler(tauri::generate_handler![todos_get, todo_add])
+        .invoke_handler(tauri::generate_handler![todos_get, todo_add, todo_delete])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
