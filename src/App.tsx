@@ -14,6 +14,10 @@ function App() {
   const [data, { mutate }] = createResource(fetcher);
 
   async function addTodo() {
+    if (!todo()) {
+      return;
+    }
+
     try {
       const res = (await invoke("todo_add", { value: todo() })) as Todo;
       const newTodo = {
@@ -24,6 +28,12 @@ function App() {
     } catch (e) {
       console.error(e);
     }
+
+    clearInput();
+  }
+
+  function clearInput() {
+    setTodo("");
   }
 
   return (
@@ -37,9 +47,13 @@ function App() {
       >
         <input
           id="todo-input"
+          value={todo()}
           onChange={(e) => setTodo(e.currentTarget.value)}
           placeholder="Enter a todo..."
         />
+        <button id="clear-input" type="button" onclick={clearInput}>
+          X
+        </button>
         <button type="submit">Add</button>
       </form>
 
